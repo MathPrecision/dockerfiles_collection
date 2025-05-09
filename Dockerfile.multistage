@@ -1,0 +1,54 @@
+#Builder Stage: use image with all tools to install packages and dependencies
+FROM .../library/python:3-ubuntu24.04 AS builder
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+# dev files for python, needed for compilation
+python3-dev \
+# build essentials include gcc and make used to build packages
+build-essential && \
+rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /app/
+
+COPY 01_BigFile /app/01_BigFile/
+COPY dashboard /app/dashboard/
+COPY .streamlit /app/.streamlit/
+COPY 00_Pictures /app/00_Pictures/
+COPY credentials.yml /app/
+
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# could run opt/venv/bin/pip install ... without need for ENV
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+#Runtime Stage: only use base ubuntu image, basic python and copy the compiled images from the build stage
+FROM .../library/ubuntu:24.04
+
+RUN apt-get update && \
+apt-get install -y --no-install-recommends \
+#dialog \
+python3
+#ca-certificates
+
+RUN apt-get clean && \
+rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app 
+
+#copy necessary files and the python packages without compiling them again
+COPY --from=builder /app /app
+COPY --from=builder /opt /opt
+
+# environment variables do not carry over between stages
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH" 
+#could also use opt/venv/bin/streamlit in CMD below, then we do not need this I guess
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "dashboard/Home.py", "--server.port=8501", "--server.address=0.0.0.0"]
