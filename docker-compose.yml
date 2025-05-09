@@ -1,0 +1,14 @@
+services: #define containers to be build
+  streamlit: #definition of name of the service (container will be named this way)
+    image: quay_addres/dir/my_image_name:v1
+    build: 
+      context: . #specify path to dockerfile
+      dockerfile: Dockerfile.multistage #specify name of dockerfile (in the usual case (just one file named Dockerfile), this should be just build: .)
+    #mapping between localhost (8502) and container (8501)
+    ports:
+      - "8502:8501" 
+    #mount current directory to app in the container (this means no copying of files is needed in the container)
+    #if files are copied in the Dockerfile, the mount will take precedence and the originally copied files are hidden
+    #volumes:
+    #  - .:/app 
+    restart: unless-stopped #restart container until explicitely stopped
