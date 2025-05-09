@@ -1,5 +1,5 @@
 #Builder Stage: use image with all tools to install packages and dependencies
-FROM .../library/python:3-ubuntu24.04 AS builder
+FROM python:3-ubuntu24.04 AS builder
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 #Runtime Stage: only use base ubuntu image, basic python and copy the compiled images from the build stage
-FROM .../library/ubuntu:24.04
+FROM ubuntu24.04
 
 RUN apt-get update && \
 apt-get install -y --no-install-recommends \

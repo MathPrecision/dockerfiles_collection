@@ -1,5 +1,5 @@
 #A premade docker image with python on Ubuntu is fetched from .../library and is set as parent image. If no premade parent image shall be set, FROM scratch is used.
-FROM .../library/python:3-ubuntu24.04
+FROM python:3-ubuntu24.04
 
 #/app is being set as working directory. If /app did not exist, /app would be created. WORKDIR creates a new image layer.
 WORKDIR /app
